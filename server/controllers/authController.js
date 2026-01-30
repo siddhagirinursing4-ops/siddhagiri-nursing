@@ -52,6 +52,15 @@ export const register = async (req, res, next) => {
 
     const { name, email, password, role } = req.body;
 
+    // Check admin limit: 1 superadmin + 1 admin = 2 total admins
+    const adminCount = await User.countDocuments({ role: 'admin' });
+    if (role === 'admin' && adminCount >= 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Maximum number of admin accounts reached. Only 1 admin allowed (in addition to superadmin).'
+      });
+    }
+
     const user = await User.create({
       name,
       email,
@@ -117,7 +126,7 @@ export const login = async (req, res, next) => {
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
-      await user.incLoginAttempts();
+      await user.incLoginAttempts(req.ip);
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
@@ -138,7 +147,25 @@ export const login = async (req, res, next) => {
 // @access  Private
 export const logout = async (req, res, next) => {
   try {
+    // Blacklist the current token
+    const token = req.headers.authorization?.split(' ')[1];
+    if (token) {
+      const crypto = await import('crypto');
+      const tokenHash = crypto.default.createHash('sha256').update(token).digest('hex');
+      if (!global.blacklistedTokens) {
+        global.blacklistedTokens = new Set();
+      }
+      global.blacklistedTokens.add(tokenHash);
+    }
+
+    // Clear refresh token from database
     await User.findByIdAndUpdate(req.user.id, { refreshToken: null });
+
+    // Clear session
+    if (req.sessionKey) {
+      const { activeSessions } = await import('../middleware/auth.js');
+      activeSessions.delete(req.sessionKey);
+    }
 
     res.cookie('token', 'none', {
       expires: new Date(Date.now() + 10 * 1000),

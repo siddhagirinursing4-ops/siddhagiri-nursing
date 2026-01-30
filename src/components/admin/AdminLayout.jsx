@@ -13,7 +13,8 @@ import {
   X,
   UserCircle,
   Home,
-  Type
+  Type,
+  GraduationCap
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -39,6 +40,7 @@ export function AdminLayout({ children }) {
     { name: 'Mandates', href: '/admin/mandates', icon: FileText },
     { name: 'Gallery', href: '/admin/gallery', icon: Image },
     { name: 'Dynamic Content', href: '/admin/dynamic-content', icon: Type },
+    { name: 'Admissions', href: '/admin/admissions', icon: GraduationCap },
     { name: 'Applications', href: '/admin/applications', icon: Users },
   ];
 

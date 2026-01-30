@@ -12,13 +12,31 @@ import errorHandler from './middleware/errorHandler.js';
 // Load env vars
 dotenv.config();
 
+// Validate required environment variables
+const requiredEnvVars = [
+  'MONGODB_URI',
+  'JWT_SECRET',
+  'JWT_REFRESH_SECRET',
+  'JWT_EXPIRE',
+  'JWT_REFRESH_EXPIRE',
+  'JWT_COOKIE_EXPIRE',
+  'CLOUDINARY_CLOUD_NAME',
+  'CLOUDINARY_API_KEY',
+  'CLOUDINARY_API_SECRET'
+];
+
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingEnvVars.join(', '));
+  console.error('Please check your .env file and ensure all required variables are set.');
+  process.exit(1);
+}
+
 // Connect to database
 connectDB();
 
 const app = express();
-
-// Trust proxy for Render
-app.set('trust proxy', 1);
 
 // Security Middleware
 app.use(helmet());
@@ -37,6 +55,13 @@ app.use('/api/', limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
+
+// Request timeout
+app.use((req, res, next) => {
+  req.setTimeout(30000); // 30 seconds
+  res.setTimeout(30000);
+  next();
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -61,9 +86,10 @@ const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
       process.env.CLIENT_URL || 'http://localhost:5173',
+      process.env.VERCEL_CLIENT_URL,
       'http://localhost:5173',
       'http://127.0.0.1:5173'
-    ];
+    ].filter(Boolean);
     
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
@@ -90,6 +116,7 @@ import galleryRoutes from './routes/gallery.js';
 import applicationRoutes from './routes/applications.js';
 import adminRoutes from './routes/admin.js';
 import dynamicContentRoutes from './routes/dynamicContent.js';
+import admissionsRoutes from './routes/admissions.js';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/programmes', programmeRoutes);
@@ -98,6 +125,7 @@ app.use('/api/gallery', galleryRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/dynamic-content', dynamicContentRoutes);
+app.use('/api/admissions', admissionsRoutes);
 
 // Error handler
 app.use(errorHandler);

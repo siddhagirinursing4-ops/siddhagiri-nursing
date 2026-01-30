@@ -11,6 +11,11 @@ import {
   resetPassword
 } from '../controllers/authController.js';
 import { protect, verifyRefreshToken, authorize } from '../middleware/auth.js';
+import { 
+  authRateLimiter, 
+  securityLogger,
+  detectSuspiciousActivity 
+} from '../middleware/security.js';
 
 const router = express.Router();
 
@@ -21,7 +26,7 @@ const registerValidation = [
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/)
     .withMessage('Password must contain uppercase, lowercase, number and special character')
 ];
 
@@ -30,13 +35,17 @@ const loginValidation = [
   body('password').notEmpty().withMessage('Password is required')
 ];
 
+// Apply security middleware
+router.use(securityLogger);
+router.use(detectSuspiciousActivity);
+
 router.post('/register', protect, authorize('superadmin'), registerValidation, register);
-router.post('/login', loginValidation, login);
+router.post('/login', authRateLimiter, loginValidation, login);
 router.post('/logout', protect, logout);
 router.get('/me', protect, getMe);
 router.post('/refresh-token', verifyRefreshToken, refreshToken);
 router.put('/update-password', protect, updatePassword);
-router.post('/forgot-password', forgotPassword);
+router.post('/forgot-password', authRateLimiter, forgotPassword);
 router.put('/reset-password/:resettoken', resetPassword);
 
 export default router;

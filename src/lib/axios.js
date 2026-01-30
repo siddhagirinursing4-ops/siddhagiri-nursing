@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || 'https://snik-api.onrender.com/api',
   withCredentials: true
 });
 
@@ -29,7 +29,7 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem('refreshToken');
         const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/refresh-token`,
+          `${import.meta.env.VITE_API_URL || 'https://snik-api.onrender.com/api'}/auth/refresh-token`,
           { refreshToken }
         );
 

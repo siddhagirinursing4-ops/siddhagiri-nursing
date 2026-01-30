@@ -1,192 +1,153 @@
-# Deployment Guide - Render (Backend) + Vercel (Frontend)
+# Deployment Guide
 
 ## Overview
-This project uses a split deployment architecture:
-- **Frontend (Vercel):** React app + static assets (PDFs)
-- **Backend (Render):** Express API + MongoDB
+- **Frontend**: DirectAdmin (Static HTML/CSS/JS)
+- **Backend**: Render.com (Free tier - stays awake 24/7)
 
 ---
 
-## Prerequisites
+## Part 1: Deploy Backend to Render (Free Tier)
 
-1. GitHub account with this repository
-2. Vercel account (sign up at https://vercel.com)
-3. Render account (sign up at https://render.com)
-4. MongoDB Atlas database (or any MongoDB instance)
-5. Cloudinary account for image uploads
+### Step 1: Prepare Backend for Render
 
----
+1. Your backend is already configured correctly with `server/package.json` having:
+   - `"start": "node server.js"` ✓
+   - `"type": "module"` ✓
 
-## Part 1: Deploy Backend to Render
+### Step 2: Create Render Account & Deploy
 
-### Step 1: Create Web Service on Render
-
-1. Go to https://render.com/dashboard
+1. Go to [render.com](https://render.com) and sign up (free)
 2. Click **"New +"** → **"Web Service"**
-3. Connect your GitHub account if not already connected
-4. Select this repository: `siddhagiri-nursing-institute`
+3. Connect your GitHub/GitLab repository
+4. Configure the service:
+   - **Name**: `your-school-backend` (or any name)
+   - **Region**: Choose closest to your users
+   - **Branch**: `main` (or your default branch)
+   - **Root Directory**: `server`
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Instance Type**: `Free`
 
-### Step 2: Configure Web Service
+### Step 3: Add Environment Variables on Render
 
-Fill in the following settings:
-
-- **Name:** `siddhagiri-backend` (or any name you prefer)
-- **Region:** Choose closest to your users
-- **Branch:** `main`
-- **Root Directory:** `server`
-- **Runtime:** `Node`
-- **Build Command:** `npm install`
-- **Start Command:** `npm start`
-- **Instance Type:** `Free` (or paid if needed)
-
-### Step 3: Add Environment Variables
-
-Click **"Advanced"** → **"Add Environment Variable"** and add these:
+In the Render dashboard, go to **Environment** tab and add these variables:
 
 ```
 NODE_ENV=production
-PORT=5000
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key_here
+PORT=10000
+MONGODB_URI=your_mongodb_atlas_connection_string
+JWT_SECRET=your_super_secret_jwt_key_min_32_chars
+JWT_REFRESH_SECRET=your_refresh_secret_key_min_32_chars
 JWT_EXPIRE=7d
-COOKIE_EXPIRE=7
-
-CLIENT_URL=https://your-frontend-url.vercel.app
-
-CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+JWT_REFRESH_EXPIRE=30d
+JWT_COOKIE_EXPIRE=7
+CLOUDINARY_CLOUD_NAME=your_cloudinary_name
+CLOUDINARY_API_KEY=your_cloudinary_key
+CLOUDINARY_API_SECRET=your_cloudinary_secret
+CLIENT_URL=https://yourdomain.com
 ```
 
 **Important Notes:**
-- Replace `your_mongodb_connection_string` with your MongoDB Atlas URI
-- Generate a strong random string for `JWT_SECRET` (use: https://randomkeygen.com/)
-- You'll update `CLIENT_URL` after deploying the frontend
+- Get MongoDB URI from [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) (free tier)
+- Get Cloudinary credentials from [Cloudinary](https://cloudinary.com) (free tier)
+- Replace `CLIENT_URL` with your DirectAdmin domain
 
-### Step 4: Deploy
+### Step 4: Keep Render Backend Awake 24/7 (Free)
 
-1. Click **"Create Web Service"**
-2. Wait for deployment to complete (3-5 minutes)
-3. Copy your backend URL: `https://siddhagiri-backend.onrender.com`
+Render free tier sleeps after 15 minutes of inactivity. To keep it awake:
 
-### Step 5: Test Backend
+**Option A: Use Cron-Job.org (Recommended)**
+1. Go to [cron-job.org](https://cron-job.org) (free)
+2. Create account and add a new cron job:
+   - **URL**: `https://your-render-app.onrender.com/health`
+   - **Schedule**: Every 10 minutes
+   - **Title**: Keep Backend Awake
 
-Visit: `https://your-backend-url.onrender.com/api/health`
+**Option B: Use UptimeRobot**
+1. Go to [uptimerobot.com](https://uptimerobot.com) (free)
+2. Add New Monitor:
+   - **Monitor Type**: HTTP(s)
+   - **URL**: `https://your-render-app.onrender.com/health`
+   - **Monitoring Interval**: 5 minutes
 
-You should see:
-```json
-{
-  "success": true,
-  "message": "API is running",
-  "timestamp": "2026-01-27T..."
-}
+### Step 5: Get Your Backend URL
+
+After deployment, Render will give you a URL like:
 ```
+https://your-school-backend.onrender.com
+```
+
+Save this URL - you'll need it for the frontend!
 
 ---
 
-## Part 2: Deploy Frontend to Vercel
+## Part 2: Deploy Frontend to DirectAdmin
 
-### Step 1: Push Updated Code
+### Step 1: Build Frontend for Production
 
-First, ensure all changes are committed:
-
-```bash
-git add .
-git commit -m "Configure split deployment for Render and Vercel"
-git push origin main
-```
-
-### Step 2: Create Vercel Project
-
-1. Go to https://vercel.com/dashboard
-2. Click **"Add New..."** → **"Project"**
-3. Import your GitHub repository
-4. **Important:** Keep Root Directory as `.` (root)
-
-### Step 3: Configure Build Settings
-
-Vercel should auto-detect Vite. Verify these settings:
-
-- **Framework Preset:** Vite
-- **Build Command:** `npm run build`
-- **Output Directory:** `dist`
-- **Install Command:** `npm install`
-
-### Step 4: Add Environment Variables
-
-Click **"Environment Variables"** and add:
-
-```
-VITE_API_URL=https://your-backend-url.onrender.com/api
-```
-
-Replace `your-backend-url.onrender.com` with your actual Render backend URL.
-
-### Step 5: Deploy
-
-1. Click **"Deploy"**
-2. Wait for deployment (2-3 minutes)
-3. Copy your frontend URL: `https://your-project.vercel.app`
-
----
-
-## Part 3: Connect Frontend and Backend
-
-### Step 1: Update Backend CORS
-
-1. Go back to Render Dashboard
-2. Open your backend service
-3. Go to **"Environment"** tab
-4. Update `CLIENT_URL` to your Vercel frontend URL:
+1. Open terminal in your project root
+2. Create `.env` file in root directory with:
    ```
-   CLIENT_URL=https://your-project.vercel.app
+   VITE_API_URL=https://your-render-backend.onrender.com/api
    ```
-5. Save changes (this will trigger a redeploy)
+   Replace with your actual Render backend URL
 
-### Step 2: Update Local Environment
-
-Create/update `.env` file in your project root:
-
-```env
-VITE_API_URL=https://your-backend-url.onrender.com/api
-```
-
----
-
-## Part 4: Initial Setup (One-time)
-
-### Create Super Admin Account
-
-1. Go to Render Dashboard → Your backend service
-2. Click **"Shell"** tab (or use Render's console)
-3. Run:
+3. Build the frontend:
    ```bash
-   npm run setup
+   npm install
+   npm run build
    ```
-4. Follow prompts to create admin account
 
-**Alternative:** Use the API directly:
-```bash
-curl -X POST https://your-backend-url.onrender.com/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Admin",
-    "email": "admin@example.com",
-    "password": "YourSecurePassword123!",
-    "role": "admin"
-  }'
-```
+This creates a `dist` folder with optimized static files.
+
+### Step 2: Upload to DirectAdmin
+
+1. Log in to your DirectAdmin panel
+2. Go to **File Manager**
+3. Navigate to `public_html` (or your domain's root folder)
+4. **Delete** any existing files in `public_html` (or create a subdirectory)
+5. Upload ALL contents from the `dist` folder:
+   - `index.html`
+   - `assets/` folder
+   - `favicon.svg`
+   - `logo.png`
+   - All PDF folders (2022-2023-Mandates, etc.)
+
+### Step 3: Configure DirectAdmin for React Router
+
+React Router needs special configuration. Create `.htaccess` file:
+
+1. In DirectAdmin File Manager, create new file: `.htaccess`
+2. Add this content (already created for you - see `.htaccess` file)
+3. Upload to `public_html` root
+
+### Step 4: Verify Deployment
+
+1. Visit your domain: `https://yourdomain.com`
+2. Check if the site loads
+3. Test navigation (should work without 404 errors)
+4. Test admin login and API calls
 
 ---
 
-## Verification Checklist
+## Part 3: Post-Deployment Checklist
 
-- [ ] Backend health check works: `https://your-backend.onrender.com/api/health`
-- [ ] Frontend loads: `https://your-frontend.vercel.app`
-- [ ] Can login to admin panel
-- [ ] PDFs are accessible (check any mandate PDF link)
-- [ ] Image uploads work (test gallery upload)
-- [ ] Forms submit successfully
+### Backend Verification
+- [ ] Backend is deployed on Render
+- [ ] All environment variables are set
+- [ ] Health check works: `https://your-backend.onrender.com/health`
+- [ ] Cron job is pinging every 10 minutes
+- [ ] MongoDB connection is working
+
+### Frontend Verification
+- [ ] Frontend is uploaded to DirectAdmin
+- [ ] `.htaccess` is in place
+- [ ] Site loads at your domain
+- [ ] React Router navigation works
+- [ ] API calls connect to backend
+- [ ] Admin panel works
+- [ ] Images and PDFs load correctly
 
 ---
 
@@ -194,125 +155,71 @@ curl -X POST https://your-backend-url.onrender.com/api/auth/register \
 
 ### Backend Issues
 
-**Problem:** "Application failed to respond"
-- Check Render logs: Dashboard → Your Service → Logs
-- Verify MongoDB connection string is correct
-- Ensure all environment variables are set
+**Problem**: Backend sleeps after 15 minutes
+- **Solution**: Verify cron-job.org or UptimeRobot is pinging `/health` endpoint
 
-**Problem:** CORS errors in browser console
-- Verify `CLIENT_URL` in Render matches your Vercel URL exactly
-- Check browser console for the exact origin being blocked
+**Problem**: CORS errors
+- **Solution**: Add your DirectAdmin domain to `CLIENT_URL` in Render environment variables
+
+**Problem**: MongoDB connection fails
+- **Solution**: Check MongoDB Atlas whitelist (allow all IPs: `0.0.0.0/0`)
 
 ### Frontend Issues
 
-**Problem:** "Network Error" or API calls fail
-- Verify `VITE_API_URL` in Vercel environment variables
-- Check if backend is running (visit health endpoint)
-- Redeploy frontend after adding environment variables
+**Problem**: 404 errors on page refresh
+- **Solution**: Verify `.htaccess` file is uploaded and configured correctly
 
-**Problem:** PDFs not loading
-- Check if files exist in `public/` folder
-- Verify build includes public folder (check Vercel build logs)
+**Problem**: API calls fail
+- **Solution**: Check `VITE_API_URL` in `.env` before build, rebuild if needed
 
-### Database Issues
-
-**Problem:** "MongooseServerSelectionError"
-- Verify MongoDB Atlas allows connections from anywhere (0.0.0.0/0)
-- Check MongoDB URI format: `mongodb+srv://username:password@cluster.mongodb.net/dbname`
-- Ensure database user has read/write permissions
+**Problem**: Images don't load
+- **Solution**: Ensure `public` folder contents are in the root of `dist` folder
 
 ---
 
-## Updating Your Application
-
-### Update Frontend
-```bash
-git add .
-git commit -m "Update frontend"
-git push origin main
-```
-Vercel auto-deploys on push to main branch.
+## Updating Your Site
 
 ### Update Backend
-```bash
-git add server/
-git commit -m "Update backend"
-git push origin main
-```
-Render auto-deploys on push to main branch.
+1. Push changes to GitHub
+2. Render auto-deploys (if enabled) or click "Manual Deploy"
 
-### Manual Redeploy
-- **Vercel:** Dashboard → Your Project → Deployments → "Redeploy"
-- **Render:** Dashboard → Your Service → "Manual Deploy" → "Deploy latest commit"
+### Update Frontend
+1. Update code
+2. Run `npm run build`
+3. Upload new `dist` folder contents to DirectAdmin
+4. Clear browser cache
 
 ---
 
-## Cost Breakdown
+## Cost Summary
 
-### Free Tier Limits
+- **Render Backend**: FREE (with cron job to keep awake)
+- **MongoDB Atlas**: FREE (512MB storage)
+- **Cloudinary**: FREE (25GB storage, 25GB bandwidth)
+- **Cron-Job.org**: FREE
+- **DirectAdmin**: Your existing hosting
 
-**Render (Free):**
-- 750 hours/month
-- Spins down after 15 min inactivity (first request takes ~30s)
-- 512 MB RAM
-- Upgrade to $7/month for always-on
-
-**Vercel (Free):**
-- 100 GB bandwidth/month
-- Unlimited deployments
-- Serverless functions: 100 GB-hours
-
-**MongoDB Atlas (Free):**
-- 512 MB storage
-- Shared cluster
-- Upgrade to $9/month for dedicated
+**Total: $0/month** 🎉
 
 ---
 
-## Production Recommendations
+## Support Resources
 
-1. **Upgrade Render to Paid Plan** ($7/month) - Keeps backend always-on
-2. **Add Custom Domain** - Configure in Vercel and Render dashboards
-3. **Enable HTTPS** - Both platforms provide free SSL certificates
-4. **Set up Monitoring** - Use Render's built-in metrics
-5. **Configure Backups** - Enable MongoDB Atlas automated backups
-6. **Add Error Tracking** - Consider Sentry or similar service
+- Render Docs: https://render.com/docs
+- MongoDB Atlas: https://www.mongodb.com/docs/atlas/
+- DirectAdmin: Your hosting provider's documentation
+- Cron-Job.org: https://cron-job.org/en/documentation/
 
 ---
 
-## Support
+## Security Notes
 
-If you encounter issues:
-1. Check Render logs: Dashboard → Service → Logs
-2. Check Vercel logs: Dashboard → Project → Deployments → View Function Logs
-3. Check browser console for frontend errors
-4. Verify all environment variables are set correctly
+1. Never commit `.env` files to Git
+2. Use strong JWT secrets (32+ characters)
+3. Keep MongoDB Atlas IP whitelist updated
+4. Enable HTTPS on DirectAdmin (Let's Encrypt)
+5. Regularly update dependencies
 
 ---
 
-## Quick Reference
-
-### Important URLs
-- Backend: `https://your-backend.onrender.com`
-- Frontend: `https://your-frontend.vercel.app`
-- Admin Panel: `https://your-frontend.vercel.app/admin`
-
-### Important Commands
-```bash
-# Local development
-npm run dev                    # Frontend
-cd server && npm run dev       # Backend
-
-# Database setup
-cd server && npm run setup     # Create super admin
-```
-
-### Environment Variables Summary
-
-**Backend (Render):**
-- `NODE_ENV`, `PORT`, `MONGODB_URI`, `JWT_SECRET`, `JWT_EXPIRE`
-- `COOKIE_EXPIRE`, `CLIENT_URL`
-- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
-
-**Frontend (Vercel):**
-- `VITE_API_URL`
+Good luck with your deployment! 🚀

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AdminLayout } from '../../components/admin/AdminLayout';
-import { Users, Edit2, Trash2, Search, Shield, ShieldCheck, X, Eye, EyeOff } from 'lucide-react';
+import { Users, Edit2, Trash2, Search, Shield, ShieldCheck, X, Eye, EyeOff, UserPlus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../lib/axios';
 
@@ -9,9 +9,10 @@ export function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, superadmins: 0 });
+  const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0, superadmins: 0, admins: 0 });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -34,11 +35,58 @@ export function AdminUsersPage() {
       const active = data.data.filter(u => u.isActive).length;
       const inactive = total - active;
       const superadmins = data.data.filter(u => u.role === 'superadmin').length;
-      setStats({ total, active, inactive, superadmins });
+      const admins = data.data.filter(u => u.role === 'admin').length;
+      setStats({ total, active, inactive, superadmins, admins });
     } catch (error) {
       toast.error('Failed to fetch users');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddNew = () => {
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      role: 'admin'
+    });
+    setShowAddModal(true);
+  };
+
+  const handleCreate = async (e) => {
+    e.preventDefault();
+
+    // Check admin limit on frontend before submitting
+    if (formData.role === 'admin' && stats.admins >= 1) {
+      toast.error('Maximum number of admin accounts reached. Only 1 admin allowed (in addition to superadmin).');
+      return;
+    }
+
+    if (!formData.password || formData.password.length < 8) {
+      toast.error('Password must be at least 8 characters long');
+      return;
+    }
+
+    // Validate password format
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/;
+    if (!passwordRegex.test(formData.password)) {
+      toast.error('Password must contain uppercase, lowercase, number and special character (@$!%*?&)');
+      return;
+    }
+
+    try {
+      const response = await api.post('/auth/register', formData);
+      toast.success('Admin user created successfully!');
+      setShowAddModal(false);
+      setFormData({ name: '', email: '', password: '', role: 'admin' });
+      fetchUsers();
+    } catch (error) {
+      console.error('Registration error:', error.response?.data);
+      const errorMessage = error.response?.data?.message || 
+                          error.response?.data?.errors?.[0]?.msg || 
+                          'Failed to create user';
+      toast.error(errorMessage);
     }
   };
 
@@ -55,6 +103,12 @@ export function AdminUsersPage() {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
+
+    // Check admin limit on frontend before submitting
+    if (formData.role === 'admin' && editingUser.role !== 'admin' && stats.admins >= 1) {
+      toast.error('Maximum number of admin accounts reached. Only 1 admin allowed (in addition to superadmin).');
+      return;
+    }
 
     try {
       const updateData = {
@@ -110,9 +164,20 @@ export function AdminUsersPage() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-900">Admin Users</h1>
-          <p className="text-slate-600 mt-1">Manage administrator accounts and permissions</p>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Admin Users</h1>
+            <p className="text-slate-600 mt-1">Manage administrator accounts and permissions</p>
+          </div>
+          <button
+            onClick={handleAddNew}
+            disabled={stats.admins >= 1}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            title={stats.admins >= 1 ? 'Maximum admin limit reached' : 'Add new admin user'}
+          >
+            <UserPlus className="w-5 h-5" />
+            Add Admin
+          </button>
         </div>
 
         {/* Stats Cards */}
@@ -248,6 +313,125 @@ export function AdminUsersPage() {
         )}
       </div>
 
+      {/* Add Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">Add New Admin</h2>
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setFormData({ name: '', email: '', password: '', role: 'admin' });
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreate} className="space-y-4">
+              {/* Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password *
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter password"
+                    required
+                    minLength={8}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Minimum 8 characters, must include uppercase, lowercase, number and special character (@$!%*?&)
+                </p>
+              </div>
+
+              {/* Role */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Role *
+                </label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="admin">Admin</option>
+                  <option value="superadmin">Super Admin</option>
+                </select>
+                {formData.role === 'admin' && stats.admins >= 1 && (
+                  <p className="text-xs text-red-600 mt-1">
+                    ⚠️ Maximum admin limit reached (1 admin + 1 superadmin allowed)
+                  </p>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setFormData({ name: '', email: '', password: '', role: 'admin' });
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={formData.role === 'admin' && stats.admins >= 1}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                  Create Admin
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Edit Modal */}
       {showEditModal && editingUser && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -334,11 +518,15 @@ export function AdminUsersPage() {
                   <option value="admin">Admin</option>
                   <option value="superadmin">Super Admin</option>
                 </select>
-                {editingUser.role === 'superadmin' && (
+                {editingUser.role === 'superadmin' ? (
                   <p className="text-xs text-gray-500 mt-1">
                     Super admin role cannot be changed
                   </p>
-                )}
+                ) : formData.role === 'admin' && editingUser.role !== 'admin' && stats.admins >= 1 ? (
+                  <p className="text-xs text-red-600 mt-1">
+                    ⚠️ Maximum admin limit reached (1 admin + 1 superadmin allowed)
+                  </p>
+                ) : null}
               </div>
 
               {/* Actions */}

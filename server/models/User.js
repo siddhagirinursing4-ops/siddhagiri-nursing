@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -21,7 +22,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Please add a password'],
-    minlength: 6,
+    minlength: 8,
     select: false
   },
   role: {
@@ -44,7 +45,26 @@ const userSchema = new mongoose.Schema({
     default: 0
   },
   lockUntil: Date,
-  refreshToken: String
+  refreshToken: String,
+  twoFactorSecret: String,
+  twoFactorEnabled: {
+    type: Boolean,
+    default: false
+  },
+  securityQuestions: [{
+    question: String,
+    answerHash: String
+  }],
+  lastPasswordChange: Date,
+  passwordHistory: [{
+    passwordHash: String,
+    changedAt: Date
+  }],
+  failedLoginIPs: [{
+    ip: String,
+    attempts: Number,
+    lastAttempt: Date
+  }]
 }, {
   timestamps: true
 });
@@ -55,8 +75,38 @@ userSchema.pre('save', async function(next) {
     next();
   }
   
+  // Check password history (prevent reusing last 5 passwords)
+  if (this.passwordHistory && this.passwordHistory.length > 0) {
+    for (const oldPassword of this.passwordHistory.slice(-5)) {
+      const isReused = await bcrypt.compare(this.password, oldPassword.passwordHash);
+      if (isReused) {
+        throw new Error('Cannot reuse recent passwords');
+      }
+    }
+  }
+  
+  // Store old password in history before hashing new one
+  if (this.isModified('password') && !this.isNew) {
+    const oldPasswordHash = this.password;
+    if (!this.passwordHistory) {
+      this.passwordHistory = [];
+    }
+    this.passwordHistory.push({
+      passwordHash: oldPasswordHash,
+      changedAt: new Date()
+    });
+    // Keep only last 5 passwords
+    if (this.passwordHistory.length > 5) {
+      this.passwordHistory = this.passwordHistory.slice(-5);
+    }
+  }
+  
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
+  
+  if (this.isModified('password') && !this.isNew) {
+    this.lastPasswordChange = Date.now();
+  }
 });
 
 // Match user entered password to hashed password in database
@@ -87,23 +137,43 @@ userSchema.methods.isLocked = function() {
   return !!(this.lockUntil && this.lockUntil > Date.now());
 };
 
-// Increment login attempts
-userSchema.methods.incLoginAttempts = function() {
+// Increment login attempts with IP tracking
+userSchema.methods.incLoginAttempts = function(ip) {
+  // Track failed attempts by IP
+  if (!this.failedLoginIPs) {
+    this.failedLoginIPs = [];
+  }
+  
+  const ipRecord = this.failedLoginIPs.find(record => record.ip === ip);
+  if (ipRecord) {
+    ipRecord.attempts += 1;
+    ipRecord.lastAttempt = Date.now();
+  } else {
+    this.failedLoginIPs.push({
+      ip,
+      attempts: 1,
+      lastAttempt: Date.now()
+    });
+  }
+  
   // If we have a previous lock that has expired, restart at 1
   if (this.lockUntil && this.lockUntil < Date.now()) {
     return this.updateOne({
-      $set: { loginAttempts: 1 },
+      $set: { loginAttempts: 1, failedLoginIPs: this.failedLoginIPs },
       $unset: { lockUntil: 1 }
     });
   }
   
-  const updates = { $inc: { loginAttempts: 1 } };
+  const updates = { 
+    $inc: { loginAttempts: 1 },
+    $set: { failedLoginIPs: this.failedLoginIPs }
+  };
   const maxAttempts = 5;
   const lockTime = 2 * 60 * 60 * 1000; // 2 hours
   
   // Lock the account if we've reached max attempts
   if (this.loginAttempts + 1 >= maxAttempts && !this.isLocked()) {
-    updates.$set = { lockUntil: Date.now() + lockTime };
+    updates.$set.lockUntil = Date.now() + lockTime;
   }
   
   return this.updateOne(updates);
@@ -112,7 +182,7 @@ userSchema.methods.incLoginAttempts = function() {
 // Reset login attempts
 userSchema.methods.resetLoginAttempts = function() {
   return this.updateOne({
-    $set: { loginAttempts: 0 },
+    $set: { loginAttempts: 0, failedLoginIPs: [] },
     $unset: { lockUntil: 1 }
   });
 };

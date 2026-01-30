@@ -61,13 +61,13 @@ export function Header() {
             {/* Left Section - Contact Info */}
             <div className="flex items-center gap-3 sm:gap-5 lg:gap-6">
               <a 
-                href="tel:+9102312687553" 
+                href="tel:+919356872628" 
                 className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-white/90 hover:text-amber-400 transition-all duration-300 hover:scale-105 group"
               >
                 <div className="w-5 h-5 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-amber-500/20 transition-all">
                   <Phone className="h-2.5 w-2.5 text-amber-400" />
                 </div>
-                <span className="hidden xs:inline font-medium">02312687553</span>
+                <span className="hidden xs:inline font-medium">+91 9356872628</span>
               </a>
               
               <a 
@@ -138,13 +138,13 @@ export function Header() {
         isScrolled ? "shadow-[0_4px_30px_rgba(0,0,0,0.1)]" : ""
       }`}>
         <div className="container mx-auto px-3 sm:px-4">
-          <div className={`flex items-center justify-between transition-all duration-500 ${isScrolled ? "h-20 sm:h-20" : "h-24 sm:h-28"}`}>
+          <div className="flex items-center justify-between h-16 sm:h-20 md:h-24">
             {/* Logo */}
-            <Link to="/" className="flex items-center group -my-2">
+            <Link to="/" className="flex items-center group -my-3 sm:-my-6">
               <img 
                 src="/logo.png"
                 alt="SNIK" 
-                className={`object-contain transition-all duration-500 group-hover:scale-105 ${isScrolled ? "h-24 sm:h-28" : "h-32 sm:h-40"}`}
+                className="h-20 sm:h-32 md:h-36 object-contain transition-all duration-300 group-hover:scale-105"
               />
             </Link>
 
@@ -192,7 +192,6 @@ export function Header() {
                             key={subItem.label}
                             to={subItem.href}
                             className="block px-4 py-3 text-[13px] text-slate-600 hover:text-orange-600 hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 transition-all duration-300 hover:pl-6 border-b border-slate-50 last:border-0"
-                            style={{ transitionDelay: `${subIndex * 50}ms` }}
                           >
                             {subItem.label}
                           </Link>
@@ -273,12 +272,7 @@ export function Header() {
           {navItems.map((item, index) => (
             <div 
               key={item.label}
-              style={{ 
-                transitionDelay: isMenuOpen ? `${index * 50}ms` : "0ms",
-                transform: isMenuOpen ? "translateX(0)" : "translateX(20px)",
-                opacity: isMenuOpen ? 1 : 0,
-                transition: "all 0.3s ease-out"
-              }}
+              className="transition-all duration-300"
             >
               {item.dropdown ? (
                 <>
@@ -304,7 +298,6 @@ export function Header() {
                         to={subItem.href}
                         className="block px-8 py-2.5 text-sm text-slate-600 hover:text-orange-600 hover:bg-orange-50 transition-all duration-300"
                         onClick={() => setIsMenuOpen(false)}
-                        style={{ transitionDelay: `${subIndex * 30}ms` }}
                       >
                         {subItem.label}
                       </Link>

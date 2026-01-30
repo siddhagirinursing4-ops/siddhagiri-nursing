@@ -422,45 +422,6 @@ export function AboutPage() {
         </div>
       </div>
 
-      {/* CTA Section */}
-      <div className="py-16 md:py-20 bg-gradient-to-br from-[#0c1829] via-[#1e3a5f] to-[#0c1829] relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-1/4 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl" />
-        </div>
-        <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-500/20 border border-amber-500/30 rounded-full text-amber-400 text-sm font-medium mb-5 animate-fade-in-up">
-              <Star className="h-4 w-4 animate-bounce-gentle" />
-              Join Our Family
-            </div>
-            
-            <h2 className="text-3xl md:text-4xl font-black text-white mb-4 animate-fade-in-up animate-delay-200">
-              Ready to Start Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">Nursing Journey?</span>
-            </h2>
-            <p className="text-white/60 mb-8 max-w-xl mx-auto animate-fade-in-up animate-delay-300">
-              Take the first step towards a rewarding career in healthcare. Contact us today for admissions.
-            </p>
-            
-            <div className="flex flex-wrap gap-4 justify-center animate-fade-in-up animate-delay-400">
-              <Link to="/programs">
-                <button className="px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-[#0c1829] rounded-xl font-bold hover:from-amber-400 hover:to-orange-400 hover:shadow-xl hover:shadow-amber-500/30 transition-all duration-300 hover:scale-105 flex items-center gap-2">
-                  Explore Programs
-                  <ArrowRight className="h-5 w-5" />
-                </button>
-              </Link>
-              <Link to="/contact">
-                <button className="px-8 py-4 bg-transparent text-white rounded-xl font-bold transition-all duration-300 border-2 border-white/30 hover:border-amber-400 hover:text-amber-400 hover:scale-105">
-                  Contact Us
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* CSS Animations */}
       <style>{`
         @keyframes fade-in-up {

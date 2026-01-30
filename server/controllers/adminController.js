@@ -93,6 +93,17 @@ export const updateUser = async (req, res, next) => {
       });
     }
 
+    // Check admin limit when changing role to admin
+    if (updateData.role === 'admin' && user.role !== 'admin') {
+      const adminCount = await User.countDocuments({ role: 'admin' });
+      if (adminCount >= 1) {
+        return res.status(400).json({
+          success: false,
+          message: 'Maximum number of admin accounts reached. Only 1 admin allowed (in addition to superadmin).'
+        });
+      }
+    }
+
     // Update basic fields
     Object.keys(updateData).forEach(key => {
       user[key] = updateData[key];

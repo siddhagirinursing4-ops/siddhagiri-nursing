@@ -35,11 +35,14 @@ export function PbbscNursingPage() {
 
   const fetchProgramme = async () => {
     try {
+      console.log('Fetching P.B.B.Sc. Nursing programme...');
       const response = await api.get('/programmes/slug/pbbsc-nursing');
+      console.log('Programme data:', response.data);
       setProgramme(response.data.data);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching programme:', err);
+      console.error('Error details:', err.response?.data);
       setError('Failed to load programme details');
       setLoading(false);
     }
@@ -256,7 +259,7 @@ export function PbbscNursingPage() {
                     <Phone className="h-5 w-5 text-amber-400 animate-pulse-gentle" />
                     <h3 className="font-bold text-sm">For Admission Call</h3>
                   </div>
-                  <p className="text-2xl md:text-3xl font-black text-amber-400 mb-4">0231-2671774</p>
+                  <p className="text-2xl md:text-3xl font-black text-amber-400 mb-4">02312687553</p>
                   <Link to="/contact">
                     <button className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 text-[#0c1829] rounded-xl font-bold hover:from-amber-400 hover:to-orange-400 transition-all duration-300 flex items-center justify-center gap-2 hover:scale-105 hover:shadow-lg hover:shadow-amber-500/25 text-sm">
                       Apply Now

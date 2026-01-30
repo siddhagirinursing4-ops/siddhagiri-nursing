@@ -85,7 +85,7 @@ export function ProgramsPage() {
           <div className="flex flex-wrap justify-center gap-6 md:gap-10 mt-10 animate-fade-in-up animate-delay-1000">
             {[
               { value: programs.length || "4", label: "Programs", icon: BookOpen },
-              { value: programs.reduce((sum, p) => sum + (p.seats || 0), 0) || "130+", label: "Total Seats", icon: Users },
+              { value: programs.reduce((sum, p) => sum + (p.seats || 0), 0) || "125", label: "Total Seats", icon: Users },
               { value: "100%", label: "Placement", icon: Target }
             ].map((stat, i) => (
               <div key={i} className="text-center px-4 py-3 bg-white/5 backdrop-blur-sm rounded-xl border border-white/10 hover:bg-white/10 transition-all duration-300 hover:scale-105">
@@ -115,7 +115,7 @@ export function ProgramsPage() {
           </div>
 
           {/* Programs Grid */}
-          <div className="grid md:grid-cols-2 gap-6 md:gap-8">
+          <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-7xl mx-auto">
             {loading && (
               <div className="col-span-2 text-center py-12">
                 <div className="inline-block w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
@@ -134,56 +134,57 @@ export function ProgramsPage() {
                 <Link 
                   key={program._id} 
                   to={`/programs/${program.slug}`}
-                  className={`group transition-all duration-700 ease-out ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+                  className={`group block transition-all duration-700 ease-out ${cardsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+                  style={{ transitionDelay: `${index * 100}ms` }}
                 >
-                  <div className="h-full bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden hover:shadow-2xl hover:shadow-slate-300/50 hover:-translate-y-2 transition-all duration-500 hover:scale-[1.02]">
+                  <div className="h-full bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden hover:shadow-2xl hover:border-amber-200 hover:-translate-y-1 transition-all duration-500">
                     {/* Card Header */}
-                    <div className="p-5 md:p-6 bg-gradient-to-r from-[#0c1829] via-[#152a45] to-[#1e3a5f] relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
+                    <div className="p-4 md:p-6 bg-gradient-to-r from-[#0c1829] via-[#152a45] to-[#1e3a5f] relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
                       <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl" />
                       
-                      <div className="flex items-center gap-4 relative z-10">
-                        <div className="w-14 h-14 md:w-16 md:h-16 bg-amber-500/15 backdrop-blur-sm rounded-xl flex items-center justify-center border border-amber-500/30 group-hover:scale-110 group-hover:bg-amber-500/25 transition-all duration-300 animate-pulse-gentle">
-                          <IconComponent className="h-7 w-7 md:h-8 md:w-8 text-amber-400" />
+                      <div className="flex items-start gap-3 md:gap-4 relative z-10">
+                        <div className="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 bg-amber-500/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-amber-500/30 group-hover:scale-110 group-hover:bg-amber-500/30 transition-all duration-300">
+                          <IconComponent className="h-6 w-6 md:h-7 md:w-7 text-amber-400" />
                         </div>
-                        <div>
-                          <h3 className="text-xl md:text-2xl font-bold text-white group-hover:text-amber-100 transition-colors">{program.title}</h3>
-                          <p className="text-white/50 text-sm">{program.shortDescription}</p>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg md:text-xl font-bold text-white group-hover:text-amber-100 transition-colors mb-1">{program.title}</h3>
+                          <p className="text-white/60 text-xs md:text-sm line-clamp-2">{program.shortDescription}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Card Body */}
-                    <div className="p-5 md:p-6">
-                      <p className="text-gray-600 mb-5 leading-relaxed text-sm md:text-base">{program.fullDescription || program.shortDescription}</p>
+                    <div className="p-4 md:p-6">
+                      <p className="text-gray-600 mb-4 leading-relaxed text-sm line-clamp-3">{program.fullDescription || program.shortDescription}</p>
                       
                       {/* Stats */}
-                      <div className="flex gap-3 mb-5">
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#0c1829]/5 border border-[#0c1829]/10 hover:bg-[#0c1829]/10 transition-colors">
-                          <Users className="h-4 w-4 text-[#0c1829]" />
-                          <span className="text-sm font-semibold text-[#0c1829]">{program.seats} Seats</span>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0c1829]/5 border border-[#0c1829]/10">
+                          <Users className="h-3.5 w-3.5 text-[#0c1829]" />
+                          <span className="text-xs md:text-sm font-semibold text-[#0c1829]">{program.seats} Seats</span>
                         </div>
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 hover:bg-amber-500/20 transition-colors">
-                          <Clock className="h-4 w-4 text-amber-600" />
-                          <span className="text-sm font-semibold text-[#0c1829]">{program.duration}</span>
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                          <Clock className="h-3.5 w-3.5 text-amber-600" />
+                          <span className="text-xs md:text-sm font-semibold text-[#0c1829]">{program.duration}</span>
                         </div>
                       </div>
 
                       {/* Highlights */}
-                      <div className="flex flex-wrap gap-2 mb-5">
-                        {program.highlights?.slice(0, 4).map((highlight, i) => (
-                          <span key={i} className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-50 rounded-full text-xs font-medium text-gray-600 border border-slate-200 hover:border-amber-300 hover:bg-amber-50 transition-all duration-300">
-                            <CheckCircle className="h-3 w-3 text-amber-500" />
-                            {highlight}
+                      <div className="flex flex-wrap gap-1.5 mb-4">
+                        {program.highlights?.slice(0, 3).map((highlight, i) => (
+                          <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-slate-50 rounded-full text-xs font-medium text-gray-600 border border-slate-200">
+                            <CheckCircle className="h-3 w-3 text-amber-500 flex-shrink-0" />
+                            <span className="truncate">{highlight}</span>
                           </span>
                         ))}
                       </div>
 
                       {/* CTA */}
-                      <div className="flex items-center justify-between p-3 md:p-4 rounded-xl bg-gradient-to-r from-slate-50 to-amber-50 border border-slate-200 group-hover:from-slate-100 group-hover:to-amber-100 group-hover:border-amber-200 transition-all duration-300">
-                        <span className="font-semibold text-[#0c1829] text-sm md:text-base">View Details</span>
-                        <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center text-white group-hover:translate-x-2 group-hover:shadow-lg group-hover:shadow-amber-500/30 transition-all duration-300">
-                          <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-slate-50 to-amber-50 border border-slate-200 group-hover:from-slate-100 group-hover:to-amber-100 group-hover:border-amber-300 transition-all duration-300">
+                        <span className="font-semibold text-[#0c1829] text-sm">View Details</span>
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center text-white group-hover:translate-x-1 group-hover:shadow-lg group-hover:shadow-amber-500/30 transition-all duration-300">
+                          <ArrowRight className="h-4 w-4" />
                         </div>
                       </div>
                     </div>
@@ -222,44 +223,6 @@ export function ProgramsPage() {
         </div>
       </div>
 
-      {/* CTA Section */}
-      <div className="py-12 md:py-16 bg-gradient-to-br from-[#0c1829] via-[#1e3a5f] to-[#0c1829] relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-0 left-1/4 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-orange-500/5 rounded-full blur-3xl" />
-        </div>
-        <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent" />
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-amber-500/20 border border-amber-500/30 rounded-full text-amber-400 text-sm font-medium mb-5 animate-fade-in-up animate-delay-300">
-              <Star className="h-4 w-4 animate-bounce-gentle" />
-              Start Your Journey
-            </div>
-            
-            <h2 className="text-2xl md:text-4xl font-bold text-white mb-4 animate-fade-in-up animate-delay-500">
-              Ready to Start Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">Nursing Career?</span>
-            </h2>
-            <p className="text-white/60 mb-8 max-w-xl mx-auto text-sm md:text-base animate-fade-in-up animate-delay-700">
-              Take the first step towards a rewarding career in healthcare. Contact us today for admissions.
-            </p>
-            
-            <div className="flex flex-wrap gap-4 justify-center animate-fade-in-up animate-delay-900">
-              <Link to="/contact">
-                <button className="px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-[#0c1829] rounded-xl font-bold hover:from-amber-400 hover:to-orange-400 hover:shadow-xl hover:shadow-amber-500/30 transition-all duration-300 hover:scale-105 flex items-center gap-2 text-sm md:text-base">
-                  Contact Us
-                  <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
-                </button>
-              </Link>
-              <Link to="/admissions">
-                <button className="px-6 md:px-8 py-3 md:py-4 bg-transparent text-white rounded-xl font-bold transition-all duration-300 border-2 border-white/30 hover:border-amber-400 hover:text-amber-400 hover:scale-105 text-sm md:text-base">
-                  Learn More
-                </button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
 
 
       {/* CSS Animations */}

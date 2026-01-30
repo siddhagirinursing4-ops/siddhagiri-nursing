@@ -22,14 +22,17 @@ import {
   MapPin
 } from "lucide-react";
 import { CLOUDINARY_URLS, getImageUrl, getVideoUrl } from "../config/cloudinary";
-import axios from "axios";
+import api from "../lib/axios";
 
 // Icon mapping for programs
 const iconMap = {
   "B.Sc Nursing": GraduationCap,
+  "B.Sc. Nursing": GraduationCap,
   "GNM": Heart,
   "P.B.B.Sc Nursing": Stethoscope,
+  "P.B.B.Sc. Nursing": Stethoscope,
   "M.Sc Nursing": Award,
+  "M.Sc. Nursing": Award,
 };
 
 // Stats Data
@@ -86,7 +89,7 @@ export function HomePage() {
     const fetchPrograms = async () => {
       try {
         console.log('Fetching programs from API...');
-        const response = await axios.get('/api/programmes');
+        const response = await api.get('/programmes');
         console.log('API Response:', response);
         console.log('Response data:', response.data);
         
@@ -96,25 +99,25 @@ export function HomePage() {
         
         if (programmesData.length === 0) {
           console.log('No programs found, using fallback');
-          // Use fallback programs matching the ProgramsPage data
+          // Use fallback programs matching the actual backend data
           setPrograms([
             { 
               title: "B.Sc. Nursing", 
               subtitle: "Bachelor of Science in Nursing",
               duration: "4 Years", 
-              seats: "60 Seats",
+              seats: "40 Seats",
               icon: GraduationCap,
               href: "/programs/bsc-nursing",
-              highlights: ["Experienced faculty", "Modern infrastructure", "Clinical training in reputed hospitals"]
+              highlights: ["MUHS approved curriculum", "Experienced faculty", "Clinical training in reputed hospitals"]
             },
             { 
               title: "GNM", 
               subtitle: "General Nursing and Midwifery",
-              duration: "3 Years", 
-              seats: "60 Seats",
+              duration: "3.5 Years", 
+              seats: "40 Seats",
               icon: Heart,
               href: "/programs/gnm",
-              highlights: ["Affordable fees", "Shorter duration", "Good job opportunities"]
+              highlights: ["MUHS approved", "Affordable fees", "Shorter duration"]
             },
             { 
               title: "P.B.B.Sc. Nursing", 
@@ -129,10 +132,15 @@ export function HomePage() {
               title: "M.Sc. Nursing", 
               subtitle: "Master of Science in Nursing",
               duration: "2 Years", 
-              seats: "20 Seats",
+              seats: "15 Seats",
               icon: Award,
               href: "/programs/msc-nursing",
-              highlights: ["Specialization in chosen field", "Research and dissertation", "Teaching opportunities"]
+              highlights: ["Specialization in chosen field", "Research and dissertation", "Leadership positions"],
+              specializations: [
+                { name: "Medical Surgical Nursing", intake: 5 },
+                { name: "Community Health Nursing", intake: 5 },
+                { name: "Obstetrics and Gynaecology (OBGy) Nursing", intake: 5 }
+              ]
             },
           ]);
           setLoading(false);
@@ -141,12 +149,13 @@ export function HomePage() {
         
         const fetchedPrograms = programmesData.map(prog => ({
           title: prog.title,
-          subtitle: prog.subtitle || prog.title,
+          subtitle: prog.shortDescription || prog.title,
           duration: prog.duration,
           seats: `${prog.seats} Seats`,
           icon: iconMap[prog.title] || GraduationCap,
           href: `/programs/${prog.slug}`,
-          highlights: prog.highlights ? prog.highlights.split(',').map(h => h.trim()).slice(0, 3) : []
+          highlights: Array.isArray(prog.highlights) ? prog.highlights.slice(0, 3) : (prog.highlights ? prog.highlights.split(',').map(h => h.trim()).slice(0, 3) : []),
+          specializations: prog.courseStructure?.specializations || []
         }));
         console.log('Mapped programs:', fetchedPrograms);
         setPrograms(fetchedPrograms);
@@ -154,25 +163,25 @@ export function HomePage() {
       } catch (error) {
         console.error('Error fetching programs:', error);
         console.log('Using fallback programs');
-        // Fallback to default programs matching ProgramsPage data
+        // Fallback to default programs matching actual backend data
         setPrograms([
           { 
             title: "B.Sc. Nursing", 
             subtitle: "Bachelor of Science in Nursing",
             duration: "4 Years", 
-            seats: "60 Seats",
+            seats: "40 Seats",
             icon: GraduationCap,
             href: "/programs/bsc-nursing",
-            highlights: ["Experienced faculty", "Modern infrastructure", "Clinical training in reputed hospitals"]
+            highlights: ["MUHS approved curriculum", "Experienced faculty", "Clinical training in reputed hospitals"]
           },
           { 
             title: "GNM", 
             subtitle: "General Nursing and Midwifery",
-            duration: "3 Years", 
-            seats: "60 Seats",
+            duration: "3.5 Years", 
+            seats: "40 Seats",
             icon: Heart,
             href: "/programs/gnm",
-            highlights: ["Affordable fees", "Shorter duration", "Good job opportunities"]
+            highlights: ["MUHS approved", "Affordable fees", "Shorter duration"]
           },
           { 
             title: "P.B.B.Sc. Nursing", 
@@ -187,10 +196,15 @@ export function HomePage() {
             title: "M.Sc. Nursing", 
             subtitle: "Master of Science in Nursing",
             duration: "2 Years", 
-            seats: "20 Seats",
+            seats: "15 Seats",
             icon: Award,
             href: "/programs/msc-nursing",
-            highlights: ["Specialization in chosen field", "Research and dissertation", "Teaching opportunities"]
+            highlights: ["Specialization in chosen field", "Research and dissertation", "Leadership positions"],
+            specializations: [
+              { name: "Medical Surgical Nursing", intake: 5 },
+              { name: "Community Health Nursing", intake: 5 },
+              { name: "Obstetrics and Gynaecology (OBGy) Nursing", intake: 5 }
+            ]
           },
         ]);
         setLoading(false);
@@ -257,7 +271,7 @@ export function HomePage() {
                   </button>
                 </Link>
                 <Link to="/programs">
-                  <button className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-bold text-lg border-2 border-white/30 hover:border-amber-400 hover:text-amber-400 transition-all duration-300 flex items-center gap-2">
+                  <button className="px-8 py-4 bg-white/20 backdrop-blur-md text-white rounded-xl font-bold text-lg border-2 border-white/50 hover:bg-white/30 hover:border-amber-400 hover:text-amber-400 transition-all duration-300 flex items-center gap-2">
                     <Play className="h-5 w-5" />
                     Explore Programs
                   </button>
@@ -280,29 +294,15 @@ export function HomePage() {
           </div>
         </div>
 
-        {/* Floating Info Card */}
-        <div className="absolute bottom-8 right-8 hidden lg:block animate-fade-in-up animate-delay-700">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 max-w-sm">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
-                <Calendar className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <p className="text-white font-bold">Admissions Open 2025</p>
-                <p className="text-white/60 text-sm">Apply via CET Cell</p>
-              </div>
-            </div>
-            <p className="text-white/70 text-sm">
-              Join SNIK's nursing programs. Excellence with compassion for a better tomorrow.
-            </p>
-          </div>
-        </div>
-
         {/* Scroll Indicator - Modern Design */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce hidden md:flex flex-col items-center gap-2">
-          <span className="text-white/60 text-xs font-medium tracking-wider">SCROLL</span>
-          <div className="w-[2px] h-12 bg-gradient-to-b from-amber-400 to-transparent"></div>
-        </div>
+        <button 
+          onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce hidden md:flex flex-col items-center gap-2 cursor-pointer hover:scale-110 transition-transform duration-300 group"
+          aria-label="Scroll down"
+        >
+          <span className="text-white/60 text-xs font-medium tracking-wider group-hover:text-amber-400 transition-colors">SCROLL</span>
+          <div className="w-[2px] h-12 bg-gradient-to-b from-amber-400 to-transparent group-hover:from-amber-300"></div>
+        </button>
       </section>
 
 
@@ -353,11 +353,24 @@ export function HomePage() {
                     <span className="px-2 py-1 bg-slate-50 text-slate-600 text-xs font-medium rounded-lg">{program.seats}</span>
                   </div>
 
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {program.highlights.map((h, i) => (
-                      <span key={i} className="text-xs text-slate-400">{h}{i < program.highlights.length - 1 ? ' •' : ''}</span>
-                    ))}
-                  </div>
+                  {/* Show specializations if available (for M.Sc. Nursing) */}
+                  {program.specializations && program.specializations.length > 0 ? (
+                    <div className="mb-4 space-y-1.5">
+                      <p className="text-xs font-semibold text-slate-600 mb-1.5">Specializations:</p>
+                      {program.specializations.map((spec, i) => (
+                        <div key={i} className="flex items-center justify-between text-xs bg-gradient-to-r from-amber-50 to-orange-50 px-2 py-1.5 rounded-lg border border-amber-100">
+                          <span className="text-slate-700 font-medium">{spec.name}</span>
+                          <span className="text-amber-600 font-bold">{spec.intake} seats</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {program.highlights.map((h, i) => (
+                        <span key={i} className="text-xs text-slate-400">{h}{i < program.highlights.length - 1 ? ' •' : ''}</span>
+                      ))}
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-1 text-amber-500 text-sm font-medium group-hover:text-amber-600">
                     Learn More <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -680,10 +693,10 @@ export function HomePage() {
                   <ArrowRight className="h-5 w-5" />
                 </button>
               </Link>
-              <a href="tel:02312687553">
+              <a href="tel:+919356872628">
                 <button className="px-10 py-5 bg-transparent text-white rounded-xl font-bold text-lg transition-all duration-300 border-2 border-white/30 hover:border-amber-400 hover:text-amber-400 hover:scale-105 flex items-center gap-2">
                   <Phone className="h-5 w-5" />
-                  02312687553
+                  +91 9356872628
                 </button>
               </a>
             </div>

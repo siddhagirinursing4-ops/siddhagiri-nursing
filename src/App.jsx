@@ -10,7 +10,7 @@ import { GnmPage } from "./pages/GnmPage";
 import { PbbscNursingPage } from "./pages/PbbscNursingPage";
 import { MscNursingPage } from "./pages/MscNursingPage";
 import { FacilitiesPage } from "./pages/FacilitiesPage";
-import { AdmissionsPage } from "./pages/AdmissionsPage";
+import { AdmissionsPage } from "./pages/AdmissionPage";
 import { GalleryPage } from "./pages/GalleryPage";
 import { ContactPage } from "./pages/ContactPage";
 import { MandatesPage } from "./pages/MandatesPage";
@@ -22,6 +22,7 @@ import { ProgrammeManagementPage } from "./pages/admin/ProgrammeManagementPage";
 import { DynamicContentPage } from "./pages/admin/DynamicContentPage";
 import { ApplicationsPage } from "./pages/admin/ApplicationsPage";
 import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
+import { AdmissionsManagementPage } from "./pages/admin/AdmissionsManagementPage";
 import { ProtectedRoute } from "./components/admin/ProtectedRoute";
 import { useAuthStore } from "./store/authStore";
 
@@ -73,6 +74,11 @@ export default function App() {
           <Route path="/admin/programmes" element={<ProgrammeManagementPage />} />
           <Route path="/admin/dynamic-content" element={<DynamicContentPage />} />
           <Route path="/admin/applications" element={<ApplicationsPage />} />
+          <Route path="/admin/admissions" element={<AdmissionsManagementPage />} />
+        </Route>
+        
+        {/* Superadmin Only Routes */}
+        <Route element={<ProtectedRoute allowedRoles={['superadmin']} />}>
           <Route path="/admin/users" element={<AdminUsersPage />} />
         </Route>
       </Routes>

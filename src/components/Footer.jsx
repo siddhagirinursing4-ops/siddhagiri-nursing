@@ -220,6 +220,15 @@ export function Footer() {
                       Kaneri, Tal. Karveer,<br />
                       Dist. Kolhapur - 416234
                     </p>
+                    <a 
+                      href="https://www.google.com/maps/dir//Siddhagiri+Nursing+Institute+siddhagiri+math+campus+Panchashil+Nagar+Kaneri,+Maharashtra+416234/@16.6131258,74.2579804,15z/data=!4m5!4m4!1m0!1m2!1m1!1s0x3bc0ffd68324e08d:0xe6861f88cf62e4e6"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 mt-2 text-amber-400 hover:text-amber-300 text-xs font-medium transition-colors"
+                    >
+                      <MapPin className="h-3.5 w-3.5" />
+                      Get Directions
+                    </a>
                   </div>
                 </li>
                 <li className="group flex items-start gap-3">
@@ -228,8 +237,7 @@ export function Footer() {
                   </div>
                   <div>
                     <p className="text-white text-sm font-medium mb-1">Phone</p>
-                    <a href="tel:02312687553" className="text-slate-400 hover:text-amber-400 text-sm block transition-colors">02312687553</a>
-                    <a href="tel:8261049063" className="text-slate-400 hover:text-amber-400 text-sm block transition-colors">8261049063</a>
+                    <a href="tel:+919356872628" className="text-slate-400 hover:text-amber-400 text-sm block transition-colors">+91 9356872628</a>
                   </div>
                 </li>
                 <li className="group flex items-start gap-3">

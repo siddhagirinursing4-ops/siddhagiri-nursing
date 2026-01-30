@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { WEB3FORMS_CONFIG } from '../config/web3forms';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -53,12 +54,12 @@ const ContactPage = () => {
         // Also send to Web3Forms for email notification
         const web3Data = {
           ...formData,
-          access_key: '5e12816c-f57b-4017-86fe-18b732aae793',
+          access_key: WEB3FORMS_CONFIG.accessKey,
           subject: formData.subject || 'New Contact Form Submission - SNIK',
           from_name: 'SNIK Contact Form',
         };
 
-        await fetch('https://api.web3forms.com/submit', {
+        await fetch(WEB3FORMS_CONFIG.apiUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -69,13 +70,13 @@ const ContactPage = () => {
 
         setStatus({ 
           type: 'success', 
-          message: 'Message sent successfully! We will respond within 24 hours.' 
+          message: 'Thank you! Your message has been sent successfully. We will respond within 24 hours.' 
         });
         setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
       } else {
         setStatus({ 
           type: 'error', 
-          message: result.message || 'Failed to send message. Please try again.' 
+          message: result.message || 'Something went wrong. Please try again or call us directly.' 
         });
       }
     } catch (error) {
@@ -101,14 +102,14 @@ const ContactPage = () => {
         
         <div className={`container mx-auto px-4 text-center relative z-10 transition-all duration-1000 ease-out ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <span className="inline-block px-4 py-1.5 bg-amber-500/20 text-amber-400 rounded-full text-sm font-medium mb-4 animate-fade-in-up animate-delay-300">
-            Get In Touch
+            We're Here to Help
           </span>
           <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 animate-fade-in-up animate-delay-500">
-            Contact <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">Us</span>
+            Get in <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">Touch</span>
           </h1>
           <div className="w-20 h-1 bg-gradient-to-r from-amber-400 to-orange-500 mx-auto mb-5 rounded-full animate-scale-in animate-delay-700" />
           <p className="text-base md:text-lg text-slate-300 max-w-2xl mx-auto animate-fade-in-up animate-delay-900">
-            Have questions about admissions or programs? We're here to help you start your nursing career.
+            Questions about admissions or our nursing programs? Our team is ready to guide you on your journey to becoming a healthcare professional.
           </p>
         </div>
       </div>
@@ -126,8 +127,8 @@ const ContactPage = () => {
                     <Send className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-[#0c1829]">Send a Message</h2>
-                    <p className="text-slate-500 text-sm">We'll get back to you soon</p>
+                    <h2 className="text-xl font-bold text-[#0c1829]">Send Us a Message</h2>
+                    <p className="text-slate-500 text-sm">We typically respond within 24 hours</p>
                   </div>
                 </div>
                 
@@ -244,14 +245,13 @@ const ContactPage = () => {
                 <h2 className="text-xl font-bold text-white mb-6 animate-fade-in-up">Contact Information</h2>
                 
                 <div className="space-y-5">
-                  <a href="tel:+9102312687553" className="flex items-start gap-3 group animate-slide-in-right animate-delay-200">
+                  <a href="tel:+919356872628" className="flex items-start gap-3 group animate-slide-in-right animate-delay-200">
                     <div className="w-10 h-10 bg-amber-500/15 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-amber-500/25 group-hover:scale-110 transition-all duration-300 animate-pulse-gentle">
                       <Phone className="h-4 w-4 text-amber-400" />
                     </div>
                     <div>
-                      <h3 className="text-white font-medium text-sm mb-0.5">Call Us</h3>
-                      <p className="text-amber-400 font-semibold text-sm">02312687553</p>
-                      <p className="text-slate-400 text-xs mt-0.5">8261049063 / 9421781843</p>
+                      <h3 className="text-white font-medium text-sm mb-0.5">Phone</h3>
+                      <p className="text-amber-400 font-semibold text-sm hover:text-amber-300 transition-colors">+91 9356872628</p>
                     </div>
                   </a>
                   

@@ -16,7 +16,8 @@ import {
   ArrowRight,
   Activity,
   Shield,
-  Type
+  Type,
+  GraduationCap
 } from 'lucide-react';
 
 export function DashboardPage() {
@@ -85,6 +86,16 @@ export function DashboardPage() {
       iconBg: 'bg-gradient-to-br from-cyan-500 to-blue-600',
       link: '/admin/dynamic-content',
       description: 'Text content items'
+    },
+    {
+      name: 'Admissions',
+      value: '1',
+      icon: GraduationCap,
+      color: 'from-indigo-500 to-purple-600',
+      bgColor: 'bg-indigo-50',
+      iconBg: 'bg-gradient-to-br from-indigo-500 to-purple-600',
+      link: '/admin/admissions',
+      description: 'Admissions content'
     },
     {
       name: 'New Applications',
@@ -337,6 +348,20 @@ export function DashboardPage() {
             </Link>
 
             <Link
+              to="/admin/admissions"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors group"
+            >
+              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                <GraduationCap className="w-5 h-5 text-indigo-600" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-slate-900">Admissions</p>
+                <p className="text-xs text-slate-500">Manage admissions page</p>
+              </div>
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all" />
+            </Link>
+
+            <Link
               to="/admin/applications"
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors group"
             >
@@ -359,8 +384,8 @@ export function DashboardPage() {
               to="/admin/users"
               className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-50 transition-colors group"
             >
-              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <Shield className="w-5 h-5 text-indigo-600" />
+              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                <Shield className="w-5 h-5 text-slate-600" />
               </div>
               <div className="flex-1">
                 <p className="font-medium text-slate-900">Admin Users</p>
