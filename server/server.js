@@ -85,25 +85,35 @@ app.get('/api/health', (req, res) => {
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
-      process.env.CLIENT_URL || 'http://localhost:5173',
-      process.env.VERCEL_CLIENT_URL,
+      process.env.CLIENT_URL,
+      'https://snik.in',
       'http://localhost:5173',
       'http://127.0.0.1:5173'
     ].filter(Boolean);
+    
+    console.log('Request from origin:', origin);
+    console.log('Allowed origins:', allowedOrigins);
     
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log('✅ CORS allowed for:', origin);
       callback(null, true);
     } else {
-      console.log('CORS blocked origin:', origin);
-      callback(null, true); // Allow in development
+      console.log('⚠️ CORS origin not in whitelist:', origin);
+      // In production, be more strict
+      if (process.env.NODE_ENV === 'production') {
+        callback(new Error('Not allowed by CORS'));
+      } else {
+        callback(null, true);
+      }
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
