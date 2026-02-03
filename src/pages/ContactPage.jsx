@@ -39,35 +39,47 @@ const ContactPage = () => {
     setStatus({ type: '', message: '' });
 
     try {
-      // Save to database
-      const response = await fetch('http://localhost:5000/api/applications', {
+      // 1. Save to database via backend API
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://siddhagiri-nursing-backend.onrender.com/api';
+      const dbResponse = await fetch(`${apiUrl}/applications`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
+      const dbResult = await dbResponse.json();
 
-      if (result.success) {
-        // Also send to Web3Forms for email notification
-        const web3Data = {
-          ...formData,
-          access_key: WEB3FORMS_CONFIG.accessKey,
-          subject: formData.subject || 'New Contact Form Submission - SNIK',
-          from_name: 'SNIK Contact Form',
-        };
+      if (!dbResult.success) {
+        console.error('Failed to save to database:', dbResult);
+        // Continue anyway to send email
+      }
 
-        await fetch(WEB3FORMS_CONFIG.apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify(web3Data),
-        });
+      // 2. Send to Web3Forms for email notification
+      const web3Data = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        subject: formData.subject || 'New Contact Form Submission - SNIK',
+        message: formData.message,
+        access_key: WEB3FORMS_CONFIG.accessKey,
+        from_name: 'SNIK Contact Form',
+      };
 
+      const emailResponse = await fetch(WEB3FORMS_CONFIG.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(web3Data),
+      });
+
+      const emailResult = await emailResponse.json();
+
+      if (emailResult.success || dbResult.success) {
         setStatus({ 
           type: 'success', 
           message: 'Thank you! Your message has been sent successfully. We will respond within 24 hours.' 
@@ -76,10 +88,11 @@ const ContactPage = () => {
       } else {
         setStatus({ 
           type: 'error', 
-          message: result.message || 'Something went wrong. Please try again or call us directly.' 
+          message: 'Something went wrong. Please try again or call us directly.' 
         });
       }
     } catch (error) {
+      console.error('Contact form error:', error);
       setStatus({ 
         type: 'error', 
         message: 'Network error. Please check your connection and try again.' 
