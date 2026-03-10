@@ -47,8 +47,8 @@ function AddYearModal({ onClose, onSuccess }) {
       setSuccess(data.data);
       toast.success(
         `Academic year ${data.data.academicYear} created successfully! ${
-          data.data.mandatesMigrated > 0
-            ? `Migrated ${data.data.mandatesMigrated} mandates from ${data.data.previousYear}.`
+          data.data.mandatesCopied > 0
+            ? `Copied ${data.data.mandatesCopied} mandates from ${data.data.previousYear}.`
             : 'No previous year found - empty year created.'
         }`
       );
@@ -88,12 +88,12 @@ function AddYearModal({ onClose, onSuccess }) {
                   <p className="text-sm text-green-700">
                     Academic year <span className="font-semibold">{success.academicYear}</span> has been created.
                   </p>
-                  {success.mandatesMigrated > 0 && (
+                  {success.mandatesCopied > 0 && (
                     <div className="mt-3 pt-3 border-t border-green-200">
                       <p className="text-sm text-green-700 font-medium mb-1">Migration Summary:</p>
                       <ul className="text-sm text-green-700 space-y-1">
                         <li>• Migrated from: {success.previousYear}</li>
-                        <li>• Mandates copied: {success.mandatesMigrated}</li>
+                        <li>• Mandates copied: {success.mandatesCopied}</li>
                       </ul>
                     </div>
                   )}

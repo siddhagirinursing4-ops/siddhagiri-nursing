@@ -1,11 +1,6 @@
 import Mandate from '../models/Mandate.js';
 import AcademicYear from '../models/AcademicYear.js';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { uploadToCloudinary, deleteFromCloudinary, copyCloudinaryFile } from '../config/cloudinary.js';
 
 export const getMandates = async (req, res, next) => {
   try {
@@ -61,32 +56,16 @@ export const createMandate = async (req, res, next) => {
         message: 'Academic year is required'
       });
     }
-
-    // Create folder path: public/{year}-Mandates
-    const folderPath = path.join(__dirname, '../../public', `${req.body.academicYear}-Mandates`);
     
-    // Create folder if it doesn't exist
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath, { recursive: true });
-    }
-
-    // Sanitize filename
-    const sanitizedFilename = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const filePath = path.join(folderPath, sanitizedFilename);
-
-    // Write file to disk
-    fs.writeFileSync(filePath, req.file.buffer);
-
-    // Build the public URL path
-    const publicUrl = `/${req.body.academicYear}-Mandates/${sanitizedFilename}`;
+    const result = await uploadToCloudinary(req.file, `mandates/${req.body.academicYear}`);
 
     const mandate = await Mandate.create({
       ...req.body,
       pdfFile: {
-        url: publicUrl,
-        publicId: sanitizedFilename,
+        url: result.secure_url,
+        publicId: result.public_id,
         filename: req.file.originalname,
-        size: req.file.size
+        size: result.bytes ?? req.file.size
       },
       uploadedBy: req.user.id
     });
@@ -114,35 +93,17 @@ export const updateMandate = async (req, res, next) => {
     const updateData = { ...req.body };
 
     if (req.file) {
-      // Delete old file from disk
-      const oldFilePath = path.join(__dirname, '../../public', mandate.pdfFile.url);
-      if (fs.existsSync(oldFilePath)) {
-        fs.unlinkSync(oldFilePath);
+      if (mandate.pdfFile?.publicId) {
+        await deleteFromCloudinary(mandate.pdfFile.publicId, 'raw');
       }
 
-      // Create folder path for new file
-      const folderPath = path.join(__dirname, '../../public', `${req.body.academicYear}-Mandates`);
-      
-      // Create folder if it doesn't exist
-      if (!fs.existsSync(folderPath)) {
-        fs.mkdirSync(folderPath, { recursive: true });
-      }
-
-      // Sanitize filename
-      const sanitizedFilename = req.file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
-      const filePath = path.join(folderPath, sanitizedFilename);
-
-      // Write new file to disk
-      fs.writeFileSync(filePath, req.file.buffer);
-
-      // Build the public URL path
-      const publicUrl = `/${req.body.academicYear}-Mandates/${sanitizedFilename}`;
+      const result = await uploadToCloudinary(req.file, `mandates/${req.body.academicYear || mandate.academicYear}`);
       
       updateData.pdfFile = {
-        url: publicUrl,
-        publicId: sanitizedFilename,
+        url: result.secure_url,
+        publicId: result.public_id,
         filename: req.file.originalname,
-        size: req.file.size
+        size: result.bytes ?? req.file.size
       };
     }
 
@@ -171,10 +132,8 @@ export const deleteMandate = async (req, res, next) => {
       });
     }
 
-    // Delete file from disk
-    const filePath = path.join(__dirname, '../../public', mandate.pdfFile.url);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    if (mandate.pdfFile?.publicId) {
+      await deleteFromCloudinary(mandate.pdfFile.publicId, 'raw');
     }
 
     await mandate.deleteOne();
@@ -253,12 +212,6 @@ export const createAcademicYear = async (req, res, next) => {
       });
     }
     
-    // Create folder for the new academic year
-    const folderPath = path.join(__dirname, '../../public', `${academicYear}-Mandates`);
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath, { recursive: true });
-    }
-    
     // Create new AcademicYear record
     const newYear = await AcademicYear.create({
       academicYear,
@@ -278,38 +231,44 @@ export const createAcademicYear = async (req, res, next) => {
       const previousMandates = await Mandate.find({ 
         academicYear: previousYear.academicYear 
       });
-      
-      const sourceFolderPath = path.join(__dirname, '../../public', `${previousYear.academicYear}-Mandates`);
-      
-      // Copy each PDF file
+
+      // Copy each mandate file into the new year folder in Cloudinary
       for (const mandate of previousMandates) {
         try {
-          const sourceFile = path.join(__dirname, '../../public', mandate.pdfFile.url);
-          const targetFile = path.join(folderPath, mandate.pdfFile.publicId);
-          
-          // Copy file if source exists
-          if (fs.existsSync(sourceFile)) {
-            fs.copyFileSync(sourceFile, targetFile);
-            
-            // Create new mandate record
-            const newPublicUrl = `/${academicYear}-Mandates/${mandate.pdfFile.publicId}`;
-            
-            await Mandate.create({
-              title: mandate.title,
-              academicYear: academicYear,
-              annexureNumber: mandate.annexureNumber,
-              pdfFile: {
-                url: newPublicUrl,
-                publicId: mandate.pdfFile.publicId,
-                filename: mandate.pdfFile.filename,
-                size: mandate.pdfFile.size
-              },
-              uploadedBy: req.user.id,
-              migratedFrom: previousYear.academicYear
-            });
-            
-            mandatesCopied++;
+          let newFile = null;
+
+          if (mandate.pdfFile?.publicId) {
+            // Copy within Cloudinary (preferred)
+            newFile = await copyCloudinaryFile(
+              mandate.pdfFile.publicId,
+              `mandates/${academicYear}`
+            );
           }
+
+          // If we can't copy (older local-storage mandates), just reference the same URL.
+          // This still makes the "new year" usable without losing access.
+          await Mandate.create({
+            title: mandate.title,
+            academicYear: academicYear,
+            annexureNumber: mandate.annexureNumber,
+            pdfFile: newFile
+              ? {
+                  url: newFile.url,
+                  publicId: newFile.publicId,
+                  filename: mandate.pdfFile.filename,
+                  size: newFile.size ?? mandate.pdfFile.size
+                }
+              : {
+                  url: mandate.pdfFile.url,
+                  publicId: mandate.pdfFile.publicId,
+                  filename: mandate.pdfFile.filename,
+                  size: mandate.pdfFile.size
+                },
+            uploadedBy: req.user.id,
+            migratedFrom: previousYear.academicYear
+          });
+
+          mandatesCopied++;
         } catch (error) {
           console.error(`Failed to copy mandate ${mandate._id}:`, error);
           failures.push({
@@ -362,29 +321,15 @@ export const deleteAcademicYear = async (req, res, next) => {
     // Find all mandates for this year
     const mandates = await Mandate.find({ academicYear: year });
     const mandateCount = mandates.length;
-    
-    // Delete all mandate records from database
-    await Mandate.deleteMany({ academicYear: year });
-    
-    // Delete the folder and all PDF files
-    const folderPath = path.join(__dirname, '../../public', `${year}-Mandates`);
-    
-    if (fs.existsSync(folderPath)) {
-      try {
-        // Delete all files in the folder
-        const files = fs.readdirSync(folderPath);
-        for (const file of files) {
-          const filePath = path.join(folderPath, file);
-          fs.unlinkSync(filePath);
-        }
-        
-        // Delete the folder itself
-        fs.rmdirSync(folderPath);
-      } catch (error) {
-        console.error(`Error deleting folder ${folderPath}:`, error);
-        // Continue with database deletion even if file deletion fails
+
+    // Delete assets from Cloudinary (best-effort) then delete DB records
+    for (const mandate of mandates) {
+      if (mandate.pdfFile?.publicId) {
+        await deleteFromCloudinary(mandate.pdfFile.publicId, 'raw');
       }
     }
+
+    await Mandate.deleteMany({ academicYear: year });
     
     // Delete the academic year record
     await academicYear.deleteOne();

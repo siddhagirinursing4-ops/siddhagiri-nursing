@@ -56,7 +56,12 @@ function PdfModal({ isOpen, onClose, pdfUrl, pdfName }) {
               </div>
             </div>
           )}
-          <iframe src={`${pdfUrl}#toolbar=1&navpanes=0&scrollbar=1`} className="w-full h-full" onLoad={() => setIsLoading(false)} title={pdfName} />
+          <iframe 
+            src={pdfUrl} 
+            className="w-full h-full" 
+            onLoad={() => setIsLoading(false)} 
+            title={pdfName}
+          />
         </div>
       </div>
     </div>
@@ -89,7 +94,7 @@ export function MandatesPage() {
       
       // Fetch all mandates
       const { data: mandatesResponse } = await api.get('/mandates');
-      const allMandates = mandatesResponse.data;
+      const allMandates = mandatesResponse.data || [];
       
       // Group mandates by academic year
       const groupedData = years.map((yearData, index) => {
@@ -291,7 +296,14 @@ export function MandatesPage() {
                           </div>
                           <div className="flex gap-2 w-full sm:w-auto shrink-0">
                             <button
-                              onClick={() => openPdfModal(doc.url, doc.name)}
+                              onClick={() => {
+                                // On mobile, open in new tab; on desktop, use modal
+                                if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                                  window.open(doc.url, '_blank');
+                                } else {
+                                  openPdfModal(doc.url, doc.name);
+                                }
+                              }}
                               className="flex-1 sm:flex-none px-3 py-2 bg-gradient-to-r from-[#0c1829] to-[#1a365d] text-white rounded-lg flex items-center justify-center gap-2 hover:from-[#0f1f33] hover:to-[#1e4175] transition-all duration-300 font-medium text-xs hover:scale-105 hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
                             >
                               <Eye size={14} className="group-hover:scale-110 transition-transform" />

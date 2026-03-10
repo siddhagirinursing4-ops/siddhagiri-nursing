@@ -557,7 +557,7 @@ export function HomePage() {
           <div className="grid grid-cols-12 gap-3 md:gap-4">
             
             {/* Main Featured Video */}
-            <div className="col-span-12 lg:col-span-8 h-[300px] md:h-[450px] rounded-2xl overflow-hidden group relative">
+            <div className="col-span-12 lg:col-span-8 h-[300px] md:h-[450px] rounded-2xl overflow-hidden group relative cursor-pointer hover:scale-[1.02] transition-transform duration-300">
               <video 
                 autoPlay muted loop playsInline
                 className="w-full h-full object-cover"
@@ -568,9 +568,6 @@ export function HomePage() {
               <div className="absolute top-4 left-4">
                 <span className="px-3 py-1 bg-amber-500 text-[#0c1829] text-xs font-bold rounded-full">FEATURED</span>
               </div>
-              <div className="absolute top-4 right-4 w-10 h-10 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <Play className="h-4 w-4 text-white" fill="white" />
-              </div>
               <div className="absolute bottom-4 left-4">
                 <p className="font-bold text-xl text-white">Campus Overview</p>
               </div>
@@ -578,86 +575,59 @@ export function HomePage() {
 
             {/* Side Videos Stack */}
             <div className="col-span-12 lg:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-3 md:gap-4 h-auto lg:h-[450px]">
-              <div className="h-[150px] lg:h-auto rounded-xl overflow-hidden relative">
+              <div className="h-[150px] lg:h-auto rounded-xl overflow-hidden relative cursor-pointer hover:scale-[1.02] transition-transform duration-300">
                 <video autoPlay muted loop playsInline className="w-full h-full object-cover">
                   <source src={getVideoUrl('3')} type="video/mp4" />
                 </video>
-                <div className="absolute top-2 right-2 w-8 h-8 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <Play className="h-3 w-3 text-white" fill="white" />
-                </div>
               </div>
-              <div className="h-[150px] lg:h-auto rounded-xl overflow-hidden relative">
+              <div className="h-[150px] lg:h-auto rounded-xl overflow-hidden relative cursor-pointer hover:scale-[1.02] transition-transform duration-300">
                 <video autoPlay muted loop playsInline className="w-full h-full object-cover">
                   <source src={getVideoUrl('14')} type="video/mp4" />
                 </video>
-                <div className="absolute top-2 right-2 w-8 h-8 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center">
-                  <Play className="h-3 w-3 text-white" fill="white" />
-                </div>
               </div>
             </div>
 
             {/* Video Row - 4 Videos */}
-            <div className="col-span-6 md:col-span-3 h-[140px] md:h-[180px] rounded-xl overflow-hidden relative">
+            <div className="col-span-6 md:col-span-3 h-[140px] md:h-[180px] rounded-xl overflow-hidden relative cursor-pointer hover:scale-[1.02] transition-transform duration-300">
               <video autoPlay muted loop playsInline className="w-full h-full object-cover">
                 <source src={getVideoUrl('15')} type="video/mp4" />
               </video>
-              <div className="absolute top-2 right-2 w-7 h-7 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <Play className="h-3 w-3 text-white" fill="white" />
-              </div>
             </div>
-            <div className="col-span-6 md:col-span-3 h-[140px] md:h-[180px] rounded-xl overflow-hidden relative">
+            <div className="col-span-6 md:col-span-3 h-[140px] md:h-[180px] rounded-xl overflow-hidden relative cursor-pointer hover:scale-[1.02] transition-transform duration-300">
               <video autoPlay muted loop playsInline className="w-full h-full object-cover">
                 <source src={getVideoUrl('16')} type="video/mp4" />
               </video>
-              <div className="absolute top-2 right-2 w-7 h-7 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <Play className="h-3 w-3 text-white" fill="white" />
-              </div>
             </div>
-            <div className="col-span-6 md:col-span-3 h-[140px] md:h-[180px] rounded-xl overflow-hidden relative">
+            <div className="col-span-6 md:col-span-3 h-[140px] md:h-[180px] rounded-xl overflow-hidden relative cursor-pointer hover:scale-[1.02] transition-transform duration-300">
               <video autoPlay muted loop playsInline className="w-full h-full object-cover">
                 <source src={getVideoUrl('17')} type="video/mp4" />
               </video>
-              <div className="absolute top-2 right-2 w-7 h-7 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <Play className="h-3 w-3 text-white" fill="white" />
-              </div>
             </div>
-            <div className="col-span-6 md:col-span-3 h-[140px] md:h-[180px] rounded-xl overflow-hidden relative">
+            <div className="col-span-6 md:col-span-3 h-[140px] md:h-[180px] rounded-xl overflow-hidden relative cursor-pointer hover:scale-[1.02] transition-transform duration-300">
               <video autoPlay muted loop playsInline className="w-full h-full object-cover">
                 <source src={getVideoUrl('18')} type="video/mp4" />
               </video>
-              <div className="absolute top-2 right-2 w-7 h-7 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <Play className="h-3 w-3 text-white" fill="white" />
-              </div>
             </div>
 
             {/* Bottom Row - Large Video + Images */}
-            <div className="col-span-12 md:col-span-6 h-[200px] md:h-[280px] rounded-xl overflow-hidden relative">
+            <div className="col-span-12 md:col-span-6 h-[200px] md:h-[280px] rounded-xl overflow-hidden relative cursor-pointer hover:scale-[1.02] transition-transform duration-300">
               <video autoPlay muted loop playsInline className="w-full h-full object-cover">
                 <source src={getVideoUrl('19')} type="video/mp4" />
               </video>
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-              <div className="absolute top-3 right-3 w-9 h-9 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <Play className="h-4 w-4 text-white" fill="white" />
-              </div>
               <div className="absolute bottom-3 left-3">
                 <p className="font-semibold text-white">Community Health Camp</p>
               </div>
             </div>
-            <div className="col-span-6 md:col-span-3 h-[200px] md:h-[280px] rounded-xl overflow-hidden relative">
+            <div className="col-span-6 md:col-span-3 h-[200px] md:h-[280px] rounded-xl overflow-hidden relative cursor-pointer hover:scale-[1.02] transition-transform duration-300">
               <video autoPlay muted loop playsInline className="w-full h-full object-cover">
                 <source src={getVideoUrl('20')} type="video/mp4" />
               </video>
-              <div className="absolute top-2 right-2 w-8 h-8 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <Play className="h-3 w-3 text-white" fill="white" />
-              </div>
             </div>
-            <div className="col-span-6 md:col-span-3 h-[200px] md:h-[280px] rounded-xl overflow-hidden relative">
+            <div className="col-span-6 md:col-span-3 h-[200px] md:h-[280px] rounded-xl overflow-hidden relative cursor-pointer hover:scale-[1.02] transition-transform duration-300">
               <video autoPlay muted loop playsInline className="w-full h-full object-cover">
                 <source src={getVideoUrl('22')} type="video/mp4" />
               </video>
-              <div className="absolute top-2 right-2 w-8 h-8 bg-white/30 backdrop-blur-sm rounded-full flex items-center justify-center">
-                <Play className="h-3 w-3 text-white" fill="white" />
-              </div>
             </div>
           </div>
         </div>
