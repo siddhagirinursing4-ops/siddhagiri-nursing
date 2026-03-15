@@ -11,11 +11,19 @@ cloudinary.config({
 
 // Upload file to Cloudinary
 export const uploadToCloudinary = async (file, folder) => {
+  // Detect if file is a PDF - must use resource_type 'raw' for PDFs
+  const isPdf = file.mimetype === 'application/pdf' || 
+    (file.originalname && file.originalname.toLowerCase().endsWith('.pdf'));
+
+  const resourceType = isPdf ? 'raw' : 'auto';
+
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder: `school/${folder}`,
-        resource_type: 'auto'
+        resource_type: resourceType,
+        // For raw files, preserve the original filename
+        ...(isPdf && { use_filename: true, unique_filename: true })
       },
       (error, result) => {
         if (error) reject(error);
@@ -31,7 +39,12 @@ export const deleteFromCloudinary = async (publicId, resourceType = 'image') => 
   try {
     await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
   } catch (error) {
-    console.error('Error deleting from Cloudinary:', error);
+    // Try raw if image fails (for PDFs uploaded before this fix)
+    try {
+      await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+    } catch (e) {
+      console.error('Error deleting from Cloudinary:', e);
+    }
   }
 };
 

@@ -15,19 +15,28 @@ import api from "../lib/axios";
 
 // PDF Preview Modal Component
 function PdfModal({ isOpen, onClose, pdfUrl, pdfName }) {
-  const [isLoading, setIsLoading] = useState(true);
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    typeof navigator !== "undefined" ? navigator.userAgent : ""
+  );
 
   useEffect(() => {
     if (isOpen) {
-      setIsLoading(true);
       document.body.style.overflow = "hidden";
+      // On mobile, open in new tab immediately and close modal
+      if (isMobile && pdfUrl) {
+        window.open(pdfUrl, "_blank");
+        onClose();
+      }
     } else {
       document.body.style.overflow = "unset";
     }
     return () => { document.body.style.overflow = "unset"; };
-  }, [isOpen]);
+  }, [isOpen, isMobile, pdfUrl, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || isMobile) return null;
+
+  // Use Google Docs viewer as fallback for desktop too (handles CSP issues)
+  const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
@@ -38,6 +47,15 @@ function PdfModal({ isOpen, onClose, pdfUrl, pdfName }) {
             <h3 className="font-bold truncate max-w-md">{pdfName}</h3>
           </div>
           <div className="flex items-center gap-2">
+            <a
+              href={pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-white/20 text-white rounded-lg flex items-center gap-2 hover:bg-white/30 transition font-semibold text-sm"
+            >
+              <Eye size={16} />
+              Open
+            </a>
             <a href={pdfUrl} download className="px-4 py-2 bg-amber-500 text-[#0c1829] rounded-lg flex items-center gap-2 hover:bg-amber-400 transition font-semibold text-sm">
               <Download size={16} />
               Download
@@ -47,20 +65,13 @@ function PdfModal({ isOpen, onClose, pdfUrl, pdfName }) {
             </button>
           </div>
         </div>
-        <div className="relative h-[calc(90vh-72px)]">
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-              <div className="text-center">
-                <Loader2 className="h-12 w-12 text-amber-500 animate-spin mx-auto mb-4" />
-                <p className="text-gray-600">Loading PDF...</p>
-              </div>
-            </div>
-          )}
-          <iframe 
-            src={pdfUrl} 
-            className="w-full h-full" 
-            onLoad={() => setIsLoading(false)} 
+        <div className="relative h-[calc(90vh-72px)] bg-gray-100">
+          <iframe
+            key={pdfUrl}
+            src={viewerUrl}
+            className="w-full h-full border-0"
             title={pdfName}
+            allow="fullscreen"
           />
         </div>
       </div>
@@ -296,18 +307,11 @@ export function MandatesPage() {
                           </div>
                           <div className="flex gap-2 w-full sm:w-auto shrink-0">
                             <button
-                              onClick={() => {
-                                // On mobile, open in new tab; on desktop, use modal
-                                if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                                  window.open(doc.url, '_blank');
-                                } else {
-                                  openPdfModal(doc.url, doc.name);
-                                }
-                              }}
+                              onClick={() => openPdfModal(doc.url, doc.name)}
                               className="flex-1 sm:flex-none px-3 py-2 bg-gradient-to-r from-[#0c1829] to-[#1a365d] text-white rounded-lg flex items-center justify-center gap-2 hover:from-[#0f1f33] hover:to-[#1e4175] transition-all duration-300 font-medium text-xs hover:scale-105 hover:shadow-lg hover:-translate-y-0.5 active:scale-95"
                             >
                               <Eye size={14} className="group-hover:scale-110 transition-transform" />
-                              <span className="hidden sm:inline">View</span>
+                              <span>View</span>
                             </button>
                             <a
                               href={doc.url}
@@ -315,7 +319,7 @@ export function MandatesPage() {
                               className="flex-1 sm:flex-none px-3 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg flex items-center justify-center gap-2 hover:from-amber-400 hover:to-orange-400 transition-all duration-300 font-semibold text-xs hover:scale-105 hover:shadow-lg hover:shadow-amber-500/30 hover:-translate-y-0.5 active:scale-95"
                             >
                               <Download size={14} className="group-hover:scale-110 transition-transform" />
-                              <span className="hidden sm:inline">Download</span>
+                              <span>Download</span>
                             </a>
                           </div>
                         </div>
