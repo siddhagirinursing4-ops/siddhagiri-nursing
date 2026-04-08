@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import toast from 'react-hot-toast';
 import { Lock, Mail, Eye, EyeOff, Shield, Sparkles, AlertTriangle } from 'lucide-react';
-import { Header } from '../../components/Header';
-import { Footer } from '../../components/Footer';
-import { AnnouncementBar } from '../../components/AnnouncementBar';
+import { Header, Footer, AnnouncementBar } from '../../components/layout';
 import { 
   detectSuspiciousActivity, 
   trackFailedLogin, 

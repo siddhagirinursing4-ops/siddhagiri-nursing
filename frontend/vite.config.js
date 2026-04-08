@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
+  // Load .env from repo root or from frontend/ (VITE_* vars)
+  envDir: path.resolve(__dirname, '..'),
   plugins: [react()],
   resolve: {
     alias: {
@@ -10,6 +12,9 @@ export default defineConfig({
     },
   },
   build: {
+    // Put build output at repo root as `dist/`
+    outDir: path.resolve(__dirname, '../dist'),
+    emptyOutDir: true,
     rollupOptions: {
       output: {
         manualChunks: {

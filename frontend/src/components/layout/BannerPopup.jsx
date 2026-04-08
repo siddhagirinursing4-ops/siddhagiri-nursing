@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import api from "../lib/axios";
+import api from "../../lib/axios";
 
 export function BannerPopup() {
   const [open, setOpen] = useState(false);

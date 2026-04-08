@@ -3,7 +3,7 @@
  * Converts: res.cloudinary.com/.../image/upload/... 
  * To:       res.cloudinary.com/.../raw/upload/...
  * 
- * Run: node server/scripts/fixMandateUrls.js
+ * Run: node backend/scripts/fixMandateUrls.js (from repo root)
  */
 
 import dotenv from 'dotenv';

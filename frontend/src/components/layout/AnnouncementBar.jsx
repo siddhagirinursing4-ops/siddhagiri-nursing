@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Volume2, Star, Calendar, Megaphone, X } from "lucide-react";
-import api from "../lib/axios";
+import api from "../../lib/axios";
 
 // Default announcements (fallback if API fails or no dynamic content)
 const defaultUpdates = [

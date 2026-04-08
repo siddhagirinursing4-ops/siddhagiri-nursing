@@ -4,19 +4,19 @@ echo Building Frontend for DirectAdmin
 echo ========================================
 echo.
 
-REM Check if .env exists
+REM Check if .env exists (repo root — Vite reads it via envDir)
 if not exist .env (
     echo ERROR: .env file not found!
     echo.
-    echo Please create .env file with:
+    echo Please create .env file in the project root with:
     echo VITE_API_URL=https://your-render-backend.onrender.com/api
     echo.
     pause
     exit /b 1
 )
 
-echo Step 1: Installing dependencies...
-call npm install
+echo Step 1: Installing frontend dependencies...
+call npm install --prefix frontend
 if errorlevel 1 (
     echo ERROR: npm install failed!
     pause
@@ -25,7 +25,7 @@ if errorlevel 1 (
 
 echo.
 echo Step 2: Building production bundle...
-call npm run build
+call npm run build --prefix frontend
 if errorlevel 1 (
     echo ERROR: Build failed!
     pause
@@ -40,7 +40,7 @@ echo.
 echo Next steps:
 echo 1. Go to your DirectAdmin File Manager
 echo 2. Navigate to public_html folder
-echo 3. Upload ALL files from the 'dist' folder
+echo 3. Upload ALL files from the 'dist' folder (root)
 echo 4. Upload the .htaccess file to public_html root
 echo 5. Visit your domain to test!
 echo.

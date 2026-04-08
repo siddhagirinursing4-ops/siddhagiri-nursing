@@ -4,7 +4,7 @@
  * HOW IT WORKS:
  * - PDFs are already uploaded to cPanel at: https://snik.in/{year}-Mandates/filename.pdf
  * - This script creates AcademicYear + Mandate records in MongoDB pointing to those URLs
- * - Run once: node server/scripts/seedMandates.js
+ * - Run once: node backend/scripts/seedMandates.js (from repo root)
  */
 
 import dotenv from 'dotenv';
